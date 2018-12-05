@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import json
 import os
-import en
+# import en
 import datetime
 import nltk
 import numpy as np
@@ -13,10 +13,10 @@ def dateGenerator(numdays): # generate N days until now, eg [20151231, 20151230]
     return set(date_list)
 
 def unify_word(word): # went -> go, apples -> apple, BIG -> big
-    try: word = en.verb.present(word) # unify tense
-    except: pass
-    try: word = en.noun.singular(word) # unify noun
-    except: pass
+    # try: word = en.verb.present(word) # unify tense
+    # except: pass
+    # try: word = en.noun.singular(word) # unify noun
+    # except: pass
     return word.lower()
 
 def readGlove(we_file, w2i_file, concat=True):
@@ -29,7 +29,7 @@ def readGlove(we_file, w2i_file, concat=True):
     V = len(word2idx)
     if concat:
         We = np.hstack([W1, W2.T])
-        print "We.shape:", We.shape
+        print("We.shape:", We.shape)
         assert(V == We.shape[0])
     else:
         We = (W1 + W2.T) / 2

@@ -5,7 +5,7 @@ import numpy as np
 import theano
 import theano.tensor as T
 import matplotlib.pyplot as plt
-import en
+# import en
 import operator
 from datetime import datetime
 from sklearn.utils import shuffle
@@ -41,7 +41,7 @@ class Glove:
                 if it % 10000 == 0:
                     print ("processed", it, "/", N)
                 n = len(sentence)
-                for i in xrange(n):
+                for i in range(n):
                     wi = sentence[i]
 
                     start = max(0, i - self.context_sz)
@@ -61,7 +61,7 @@ class Glove:
                         X[wi,1] += points
                         X[1,wi] += points
 
-                    for j in xrange(start, i):
+                    for j in range(start, i):
                         if j == i: continue
                         wj = sentence[j]
                         points = 1.0 / abs(i - j) # this is +ve
@@ -117,7 +117,7 @@ class Glove:
 
         costs = []
         sentence_indexes = range(len(sentences))
-        for epoch in xrange(epochs):
+        for epoch in range(epochs):
             delta = W.dot(U.T) + b.reshape(V, 1) + c.reshape(1, V) + mu - logX
             cost = ( fX * delta * delta ).sum()
             costs.append(cost)
@@ -136,22 +136,22 @@ class Glove:
                 else:
                     # update W
                     oldW = W.copy()
-                    for i in xrange(V):
+                    for i in range(V):
                         W[i] -= learning_rate*(fX[i,:]*delta[i,:]).dot(U)
                     W -= learning_rate*reg*W
 
                     # update b
-                    for i in xrange(V):
+                    for i in range(V):
                         b[i] -= learning_rate*fX[i,:].dot(delta[i,:])
                     b -= learning_rate*reg*b
 
                     # update U
-                    for j in xrange(V):
+                    for j in range(V):
                         U[j] -= learning_rate*(fX[:,j]*delta[:,j]).dot(oldW)
                     U -= learning_rate*reg*U
 
                     # update c
-                    for j in xrange(V):
+                    for j in range(V):
                         c[j] -= learning_rate*fX[:,j].dot(delta[:,j])
                     c -= learning_rate*reg*c
 
@@ -161,8 +161,8 @@ class Glove:
                 # update W
                 # fast way
                 # t0 = datetime.now()
-                for i in xrange(V):
-                    # matrix = reg*np.eye(D) + np.sum((fX[i,j]*np.outer(U[j], U[j]) for j in xrange(V)), axis=0)
+                for i in range(V):
+                    # matrix = reg*np.eye(D) + np.sum((fX[i,j]*np.outer(U[j], U[j]) for j in range(V)), axis=0)
                     matrix = reg*np.eye(D) + (fX[i,:]*U.T).dot(U)
                     # assert(np.abs(matrix - matrix2).sum() < 10e-5)
                     vector = (fX[i,:]*(logX[i,:] - b[i] - c - mu)).dot(U)
@@ -170,23 +170,23 @@ class Glove:
                 # print "fast way took:", (datetime.now() - t0)
 
                 # update b
-                for i in xrange(V):
+                for i in range(V):
                     denominator = fX[i,:].sum()
                     # assert(denominator > 0)
                     numerator = fX[i,:].dot(logX[i,:] - W[i].dot(U.T) - c - mu)
-                    # for j in xrange(V):
+                    # for j in range(V):
                     #     numerator += fX[i,j]*(logX[i,j] - W[i].dot(U[j]) - c[j])
                     b[i] = numerator / denominator / (1 + reg)
                 # print "updated b"
 
                 # update U
-                for j in xrange(V):
+                for j in range(V):
                     matrix = reg*np.eye(D) + (fX[:,j]*W.T).dot(W)
                     vector = (fX[:,j]*(logX[:,j] - b - c[j] - mu)).dot(W)
                     U[j] = np.linalg.solve(matrix, vector)
 
                 # update c
-                for j in xrange(V):
+                for j in range(V):
                     denominator = fX[:,j].sum()
                     numerator = fX[:,j].dot(logX[:,j] - W.dot(U[j]) - b  - mu)
                     c[j] = numerator / denominator / (1 + reg)
@@ -203,10 +203,10 @@ class Glove:
         np.savez(fn, *arrays)
 
 def unify_word(word): # went -> go, apples -> apple, BIG -> big
-    try: word = en.verb.present(word) # unify tense
-    except: pass
-    try: word = en.noun.singular(word) # unify noun
-    except: pass
+    # try: word = en.verb.present(word) # unify tense
+    # except: pass
+    # try: word = en.noun.singular(word) # unify noun
+    # except: pass
     return word.lower()
 
 def get_reuters_data(n_vocab):
