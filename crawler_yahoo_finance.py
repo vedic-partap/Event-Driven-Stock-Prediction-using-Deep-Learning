@@ -1,11 +1,10 @@
 #!/usr/bin/python
-import sys
-import urllib2
 import re
+import sys
 import os
 import time
 import urllib
-import urllib2
+import urllib3
 
 import random
 import json
@@ -44,6 +43,7 @@ def get_stock_Prices():
 
 def repeatDownload(ticker):
     repeat_times = 3 # repeat download for N times
+    priceStr = ""
     for _ in range(repeat_times): 
         try:
             time.sleep(random.uniform(2, 3))
@@ -51,7 +51,7 @@ def repeatDownload(ticker):
             if len(priceStr) > 0: # skip loop if data is not empty
                 break
         except:
-            if _ == 0: print ticker, "Http error!"
+            if _ == 0: print(ticker, "Http error!")
     return priceStr
 
 
