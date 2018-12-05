@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import re
-import urllib2
+import urllib3
 import csv
 import os
 import sys
