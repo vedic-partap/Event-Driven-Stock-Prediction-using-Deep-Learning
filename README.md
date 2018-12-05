@@ -41,11 +41,11 @@ Use NLP to predict stock price movement based on news from Reuters, we need the 
 5. The result shows a significant 1-2% improve on the test set
 
 Use the following script to crawl it and format it to our local file
-
+Note : We can relate the news with company and date, this is more precise than Bloomberg News
 #### 1 Crawling of Data
 
 ```python
-./crawler_reuters.py # we can relate the news with company and date, this is more precise than Bloomberg News
+python crawler_reuters.py 
 ```
 
 Yahoo Finanace is also a great place to collect the data  
@@ -54,7 +54,7 @@ Yahoo Finanace is also a great place to collect the data
 To use our customized word vector, apply GloVe to train word vector from Reuters corpus in NLTK
 
 ```python
-./embeddingWord.py
+python embeddingWord.py
 ```
 ### 3. Feature Engineering
 
@@ -62,13 +62,13 @@ Projection of word to word vector
 Seperate test set away from training+validation test, otherwise we would get a too optimistic result.
 
 ```python
-./genFeatureMatrix.py
+python genFeatureMatrix.py
 ```
 Here there is important point to note when we are separating the Cross Validation set and the Training Set. The shuffiling of data can create a very large mistake and untraceble. Consider we have news that are similar in contex but the language of news are slightly different and the got separated in training and the cross validation set. Then the error in cross validation set get biased as the model is already trained against that model so that example will be of no use and effective cross validation set reduces.
 
 ### 4. Train a ConvoNet to predict the stock price movement. 
 ```python
-./model_cnn.py
+python model_cnn.py
 ```
 
 ### Other Reading Materials
