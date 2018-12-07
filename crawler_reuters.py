@@ -10,6 +10,7 @@ import datetime
 import numpy as np
 from bs4 import BeautifulSoup
 
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class news_Reuters:
     def __init__(self):
@@ -35,6 +36,7 @@ class news_Reuters:
         suffix = {'AMEX': '.A', 'NASDAQ': '.O', 'NYSE': '.N'}
         # e.g. http://www.reuters.com/finance/stocks/company-news/BIDU.O?date=09262017
         url = "http://www.reuters.com/finance/stocks/companyNews/" + ticker + suffix[exchange]
+        http = urllib3.PoolManager()
         has_Content = 0
         repeat_times = 4
         # check the website to see if that ticker has many news
@@ -42,26 +44,26 @@ class news_Reuters:
         for _ in range(repeat_times): # repeat in case of http failure
             try:
                 time.sleep(np.random.poisson(3))
-                response = urllib2.urlopen(url)
-                data = response.read()
-                soup = BeautifulSoup(data, "lxml")
+                response = http.request('GET', url)
+                soup = BeautifulSoup(response.data, "lxml")
+                #print(soup.prettify())
                 has_Content = len(soup.find_all("div", {'class': ['topStory', 'feature']}))
                 break
             except:
                 continue
-        
+
         # spider task for the past
         # if some company has no news even if we don't input date
         #     set this ticker into the lowest priority list
         #
-        # else 
+        # else
         #     if it doesn't have a single news for NN consecutive days, stop iterating dates
         #     set this ticker into the second-lowest priority list
         ticker_failed = open('./input/news_failed_tickers.csv', 'a+')
         if has_Content > 0:
             missing_days = 0
             for timestamp in dateList:
-                hasNews = self.repeatDownload(ticker, line, url, timestamp) 
+                hasNews = self.repeatDownload(ticker, line, url, timestamp)
                 if hasNews: missing_days = 0 # if get news, reset missing_days as 0
                 else: missing_days += 1
                 if missing_days > has_Content * 5 + 20: # 2 NEWS: wait 30 days and stop, 10 news, wait 70 days
@@ -75,15 +77,15 @@ class news_Reuters:
             ticker_failed.write(ticker + ',' + today + ',' + 'LOWEST\n')
         ticker_failed.close()
 
-    def repeatDownload(self, ticker, line, url, timestamp): 
+    def repeatDownload(self, ticker, line, url, timestamp):
         new_time = timestamp[4:] + timestamp[:4] # change 20151231 to 12312015 to match reuters format
+        http = urllib3.PoolManager()
         repeat_times = 3 # repeat downloading in case of http error
-        for _ in range(repeat_times): 
+        for _ in range(repeat_times):
             try:
                 time.sleep(np.random.poisson(3))
-                response = urllib2.urlopen(url + "?date=" + new_time)
-                data = response.read()
-                soup = BeautifulSoup(data, "lxml")
+                response = http.request('GET', url + "?date=" + new_time)
+                soup = BeautifulSoup(response.data, "lxml")
                 hasNews = self.parser(soup, line, ticker, timestamp)
                 if hasNews: return 1 # return if we get the news
                 break # stop looping if the content is empty (no error)
