@@ -93,11 +93,11 @@ class news_Reuters:
                 print('Http error')
                 continue
         return 0
-  
+
     def parser(self, soup, line, ticker, timestamp):
         content = soup.find_all("div", {'class': ['topStory', 'feature']})
         if len(content) == 0: return 0
-        fout = open('./input/news_reuters.csv', 'a+')
+        fout = open('./input/news_reuters.csv', 'a+',encoding = 'utf-8')
         for i in range(len(content)):
             title = content[i].h2.get_text().replace(",", " ").replace("\n", " ")
             body = content[i].p.get_text().replace(",", " ").replace("\n", " ")
@@ -106,10 +106,11 @@ class news_Reuters:
             else: news_type = 'normal'
 
             print(ticker, timestamp, title, news_type)
-            fout.write(','.join([ticker, line[1], timestamp, title, body, news_type]).encode('utf-8') + '\n')
+            fout.write(','.join([ticker, line[1], timestamp, title, body, news_type])+'\n')
+
         fout.close()
         return 1
-    
+
     def dateGenerator(self, numdays): # generate N days until now
         base = datetime.datetime.today()
         date_list = [base - datetime.timedelta(days=x) for x in range(0, numdays)]
