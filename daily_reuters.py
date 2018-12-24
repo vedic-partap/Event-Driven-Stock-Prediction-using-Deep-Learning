@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import re
-# import urllib2
+
+import urllib3
 import csv
 import os
 import sys
@@ -24,6 +25,8 @@ load_dotenv()
 
 
 api_key = os.getenv("NEWSAPI_APIKEY")
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class news_Reuters:
     def __init__(self):

@@ -3,7 +3,6 @@ import re
 import sys
 import os
 import time
-import urllib
 import urllib3
 
 import random
@@ -13,11 +12,11 @@ from math import log
 # output file name: input/stockPrices_raw.json
 # json structure: crawl daily price data from yahoo finance
 #          ticker
-#         /  |   \       
+#         /  |   \
 #     open close adjust ...
 #       /    |     \
 #    dates dates  dates ...
-
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 def calc_finished_ticker():
     os.system("awk -F',' '{print $1}' ./input/news_reuters.csv | sort | uniq > ./input/finished.reuters")
 
@@ -44,7 +43,7 @@ def get_stock_Prices():
 def repeatDownload(ticker):
     repeat_times = 3 # repeat download for N times
     priceStr = ""
-    for _ in range(repeat_times): 
+    for _ in range(repeat_times):
         try:
             time.sleep(random.uniform(2, 3))
             priceStr = PRICE(ticker)
@@ -60,13 +59,14 @@ def PRICE(ticker):
     end_y, end_m, end_d = '2999', '12', '01' # until now
 
     # Construct url
-    url1 = "http://chart.finance.yahoo.com/table.csv?s=" + ticker
+    url1 = "http://in.finance.yahoo.com/table.csv?s=" + ticker
     url2 = "&a=" + start_m + "&b=" + start_d + "&c=" + start_y
     url3 = "&d=" + end_m + "&e=" + end_d + "&f=" + end_y + "&g=d&ignore=.csv"
 
     # parse url
-    response = urllib2.urlopen(url1 + url2 + url3)
-    csv = response.read().split('\n')
+    http = urllib3.PoolManager()
+    response = http.request('GET', url1 + url2 + url3)
+    csv = str(response).split('\n')
     # get historical price
     ticker_price = {}
     index = ['open', 'high', 'low', 'close', 'volume', 'adjClose']

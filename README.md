@@ -80,3 +80,4 @@ python model_cnn.py
 6. [Implementation of CNN in sequence classification](https://github.com/dennybritz/cnn-text-classification-tf)
 7. [Getting Started with Word2Vec and GloVe in Python](http://textminingonline.com/getting-started-with-word2vec-and-glove-in-python)
 
+Please join [Slack Group](https://join.slack.com/t/stock-market27/shared_invite/enQtNDgzMjY3Njg0OTY3LWUxNDk3ZGUzNWE2MWMwMmU3MmQzYjBjNzAwMDVmOWFkYTljMTQ2NzIxNWI1YzI5MmQ1ZmQ4OGM5MDViZjI0MDE) for contributing to the project. 
