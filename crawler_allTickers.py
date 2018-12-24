@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import urllib2
+import urllib3
 import csv
 import sys
 import numpy as np
