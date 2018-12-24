@@ -9,18 +9,13 @@ import datetime
 
 import numpy as np
 from bs4 import BeautifulSoup
-from dotenv import load_dotenv
-
-load_dotenv()
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-api_key = os.getenv("NEWSAPI_APIKEY")
 
 class news_Reuters:
     def __init__(self):
         fin = open('./input/tickerList.csv')
-        self.newsapi = NewsApiClient(api_key=api_key)
+
         filterList = set()
         try: # this is used when we restart a task
             fList = open('./input/finished.reuters')
@@ -43,12 +38,12 @@ class news_Reuters:
         url = "http://www.reuters.com/finance/stocks/companyNews/" + ticker + suffix[exchange]
         http = urllib3.PoolManager()
         has_Content = 0
-        repeat_times = 0
+        repeat_times = 4
         # check the website to see if that ticker has many news
         # if true, iterate url with date, otherwise stop
         for _ in range(repeat_times): # repeat in case of http failure
             try:
-                # time.sleep(np.random.poisson(3))
+                time.sleep(np.random.poisson(3))
                 response = http.request('GET', url)
                 soup = BeautifulSoup(response.data, "lxml")
                 #print(soup.prettify())
@@ -83,21 +78,20 @@ class news_Reuters:
         ticker_failed.close()
 
     def repeatDownload(self, ticker, line, url, timestamp):
+        new_time = timestamp[4:] + timestamp[:4] # change 20151231 to 12312015 to match reuters format
         http = urllib3.PoolManager()
         repeat_times = 3 # repeat downloading in case of http error
-
-        fout = open('./input/news_reuters.csv', 'a+')
-        all_articles = self.newsapi.get_everything(q=ticker,
-                                              language='en',
-                                              from_param=timestamp,
-                                              to=timestamp,
-                                              sort_by='relevancy')
-        if all_articles['articles']:
-            article =  all_articles['articles'][0]
-            print('------------------------------------News---------------------------------------')
-            print('Title:', article['title'])
-            fout.write(','.join([ticker, line[1], timestamp, title, body, news_type]).encode('utf-8') + '\n')
-        fout.close()
+        for _ in range(repeat_times):
+            try:
+                time.sleep(np.random.poisson(3))
+                response = http.request('GET', url + "?date=" + new_time)
+                soup = BeautifulSoup(response.data, "lxml")
+                hasNews = self.parser(soup, line, ticker, timestamp)
+                if hasNews: return 1 # return if we get the news
+                break # stop looping if the content is empty (no error)
+            except: # repeat if http error appears
+                print('Http error')
+                continue
         return 0
 
     def parser(self, soup, line, ticker, timestamp):
@@ -120,7 +114,7 @@ class news_Reuters:
     def dateGenerator(self, numdays): # generate N days until now
         base = datetime.datetime.today()
         date_list = [base - datetime.timedelta(days=x) for x in range(0, numdays)]
-        for i in range(len(date_list)): date_list[i] = date_list[i].strftime("%Y-%m-%d")
+        for i in range(len(date_list)): date_list[i] = date_list[i].strftime("%Y%m%d")
         return date_list
 
 def main():
