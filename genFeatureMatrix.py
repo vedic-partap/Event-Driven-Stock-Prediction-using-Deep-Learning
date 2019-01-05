@@ -36,7 +36,7 @@ def padding(sentencesVec, keepNum):
     else:
         return sentencesVec[:, -keepNum:].flatten()
 
-def gen_FeatureMatrix(wordEmbedding, word2idx, priceDt, max_words=60, mtype="test"):
+def gen_FeatureMatrix(wordEmbedding, word2idx, priceDt, max_words=60, mtype="test",flag=0):
     # step 2, build feature matrix for training data
     loc = './input/'
     input_files = [f for f in os.listdir(loc) if f.startswith('news_reuters.csv')]
@@ -53,11 +53,20 @@ def gen_FeatureMatrix(wordEmbedding, word2idx, priceDt, max_words=60, mtype="tes
     for file in input_files:
         count = 0 # Not more than 50k news
         with open(loc+file) as f:
-            if(mtype == 'test'):
-                f.seek(140000,0)              # seek to end of file; f.seek(0, 2) is legal
+            if mtype == 'test' and not flag:
+                f.seek(125000,0)           # seek to end of file; f.seek(0, 2) is legal
+            if mtype == 'validation' and not flag:
+                f.seek(100000,0)
+            if mtype == 'train' and flag :
+                f.seek(50000,0)
+            if mtype == 'test' and flag :
+                f.seek(137500,0)
+            if mtype == 'validation' and flag :
+                f.seek(112500,0)
             for line in f:
-                if mtype == 'test' and count == 1000: break
-                if mtype == 'train' and count  == 50000: break
+                if mtype == 'test' and count == 12500: break
+                if mtype == 'train' and count== 50000: break
+                if mtype == 'validation' and count == 12500:break
                 line = line.strip().split(',')
                 if len(line) != 6: continue
                 ticker, name, day, headline, body ,newsType= line
@@ -84,7 +93,7 @@ def gen_FeatureMatrix(wordEmbedding, word2idx, priceDt, max_words=60, mtype="tes
     features = np.array(features)
     labels = np.matrix(labels)
     featureMatrix = np.concatenate((features, labels.T), axis=1)
-    fileName = './input/featureMatrix_' + mtype + '.csv'
+    fileName = './input/featureMatrix_'+ str(flag) + "_" + mtype + '.csv'
     np.savetxt(fileName, featureMatrix, fmt="%s")
 
 def build(wordEmbedding, w2i_file, max_words=60):
@@ -93,8 +102,13 @@ def build(wordEmbedding, w2i_file, max_words=60):
     with open(w2i_file) as data_file:
         word2idx = json.load(data_file)
 
-    gen_FeatureMatrix(wordEmbedding, word2idx, priceDt, max_words, "train")
-    gen_FeatureMatrix(wordEmbedding, word2idx, priceDt, max_words, "test")
+    #gen_FeatureMatrix(wordEmbedding, word2idx, priceDt, max_words, "train",0)
+    gen_FeatureMatrix(wordEmbedding, word2idx, priceDt, max_words, "validation",0)
+    gen_FeatureMatrix(wordEmbedding, word2idx, priceDt, max_words, "test",0)
+    # Making Additional Features if required
+    #gen_FeatureMatrix(wordEmbedding, word2idx, priceDt, max_words, "train",1)
+    gen_FeatureMatrix(wordEmbedding, word2idx, priceDt, max_words, "validation",1)
+    gen_FeatureMatrix(wordEmbedding, word2idx, priceDt, max_words, "test",1)
 
 def main(we, w2i_file):
     wordEmbedding = readGlove(we)

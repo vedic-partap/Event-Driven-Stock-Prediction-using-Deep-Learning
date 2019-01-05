@@ -56,6 +56,13 @@ To use our customized word vector, apply GloVe to train word vector from Reuters
 ```python
 python embeddingWord.py
 ```
+To use pre-trained GloVe word vectors
+
+```python
+python embeddingWordPre.py
+```
+
+
 ### 3. Feature Engineering
 
 Projection of word to word vector
@@ -66,10 +73,27 @@ python genFeatureMatrix.py
 ```
 Here there is important point to note when we are separating the Cross Validation set and the Training Set. The shuffiling of data can create a very large mistake and untraceble. Consider we have news that are similar in contex but the language of news are slightly different and the got separated in training and the cross validation set. Then the error in cross validation set get biased as the model is already trained against that model so that example will be of no use and effective cross validation set reduces.
 
-### 4. Train a ConvoNet to predict the stock price movement. 
+### 4. Training 
+To train a Stacked-Bidirectional GRU network to predict the stock price movement.
+
+```python
+python model_sb_gru.py
+```
+
+To train a ConvoNet network to predict the stock price movement.
+
 ```python
 python model_cnn.py
 ```
+### 5. Model
+Model folder contains a trained model with 100K news on Stacked-Bidirectional GRU network.
+To use the model
+
+```python
+cd model
+python load.py
+```
+Accuracy of model is 96.79%. Furthur improvement like attention mechanism or cyclic learning rate is required. 
 
 ### Other Reading Materials
 1. H Lee, etc, [On the Importance of Text Analysis for Stock Price Prediction](http://nlp.stanford.edu/pubs/lrec2014-stock.pdf), LREC, 20145. Xiao Ding, [Deep Learning for Event-Driven Stock Prediction](http://ijcai.org/Proceedings/15/Papers/329.pdf), IJCAI2015
@@ -80,4 +104,3 @@ python model_cnn.py
 6. [Implementation of CNN in sequence classification](https://github.com/dennybritz/cnn-text-classification-tf)
 7. [Getting Started with Word2Vec and GloVe in Python](http://textminingonline.com/getting-started-with-word2vec-and-glove-in-python)
 
-Please join [Slack Group](https://join.slack.com/t/stock-market27/shared_invite/enQtNDgzMjY3Njg0OTY3LWUxNDk3ZGUzNWE2MWMwMmU3MmQzYjBjNzAwMDVmOWFkYTljMTQ2NzIxNWI1YzI5MmQ1ZmQ4OGM5MDViZjI0MDE) for contributing to the project. 
