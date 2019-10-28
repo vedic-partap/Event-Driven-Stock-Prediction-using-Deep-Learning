@@ -1,41 +1,56 @@
 #!/usr/bin/python
-import urllib3
-import csv
-import sys
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
 import numpy as np
+import io
+import sys
+
+def preprocess(cap):
+    m = {'K': 3, 'M': 6, 'B': 9, 'T': 12}
+    if type(cap) == str:
+        cap = cap.strip().replace('$','')
+        if cap[-1] in m:
+            amount = float(cap[:-1])*float(pow(10,m[cap[-1]]))
+            return amount
+        else:
+            return float(cap)
+    else:
+        return np.NaN
+    
+
 
 def getTickers(percent):
-    file = open('./input/tickerList.csv', 'w')
-    writer = csv.writer(file, delimiter=',')
-    capStat, output = np.array([]), []
-    for exchange in ["NASDAQ", "NYSE", "AMEX"]:        
-        url = "http://www.nasdaq.com/screening/companies-by-industry.aspx?exchange="
-        repeat_times = 10 # repeat downloading in case of http error
-        for _ in range(repeat_times): 
-            try:
-                print "Download tickers from " + exchange
-                response = urllib2.urlopen(url + exchange + '&render=download')
-                content = response.read().split('\n')
-                for num, line in enumerate(content):
-                    line = line.strip().strip('"').split('","')
-                    if num == 0 or len(line) != 9: continue # filter unmatched format
-                    ticker, name, lastSale, MarketCap, IPOyear, sector, \
-                    industry = line[0: 4] + line[5: 8]
-                    capStat = np.append(capStat, float(MarketCap))
-                    output.append([ticker, name.replace(',', '').replace('.', ''), exchange, MarketCap])
-                break
-            except:
-                continue
+    tot_data = None
+    try:
+        for exchange in ["NASDAQ", "NYSE", "AMEX"]:
+            url="https://old.nasdaq.com/screening/companies-by-name.aspx?letter=0&exchange="+exchange.lower()+"&render=download"
+            s=requests.get(url).content
+            c=pd.read_csv(io.StringIO(s.decode('utf-8')))
+            # print(c)
+            c['Exchange'] = exchange
+            if tot_data is None:
+                tot_data = c
+            else:
+                tot_data = pd.concat([tot_data, c])
+    except:
+        print('ERROR')
+        pass
+    columns = ['Symbol', 'Name', 'Exchange', 'MarketCap']
+    tot_data = tot_data[columns]
+    tot_data = tot_data.dropna().reset_index(drop=True)
+    print('Number of Samples:',tot_data.shape[0])
+    tot_data['MarketCap'] = tot_data['MarketCap'].apply(lambda x : preprocess(x))
+    markets_caps = list(tot_data['MarketCap'])
+    tot_data[tot_data['MarketCap']<=np.percentile(markets_caps, 99.9)].shape
+    tot_data.to_csv('input/tickerList.csv')
 
-    for data in output:
-        marketCap = float(data[3])
-        if marketCap < np.percentile(capStat, 100 - percent): continue
-        writer.writerow(data)
+
 
 
 def main():
     arg = sys.argv[1]
-    s = getTickers(int(arg)) # keep the top N% market-cap companies
+    s = getTickers(float(arg)) # keep the top N% market-cap companies
 
 
 if __name__ == "__main__":
